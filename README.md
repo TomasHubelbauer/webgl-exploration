@@ -57,4 +57,4 @@ https://www.jsdelivr.com/package/npm/gl-matrix
 - [ ] Fix the *Exceeded 16 live WebGL contexts for this principal, losing the least recently used one.* error
   - Do I need to reacreate the context each time or something?
 
-- [ ] Continue with https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Creating_3D_objects_using_WebGL
+- [ ] Continue with https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL

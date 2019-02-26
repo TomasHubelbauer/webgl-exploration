@@ -92,13 +92,38 @@ void main() {
 
         const positionBuffer = context.createBuffer();
         context.bindBuffer(context.ARRAY_BUFFER, positionBuffer);
-        context.bufferData(context.ARRAY_BUFFER, new Float32Array([ -1, 1 /* LT */, 1, 1 /* RT */, -1, -1 /* LB */, 1, -1 /* RB */ ]), context.STATIC_DRAW);
-        context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'vertexPosition'), 2, context.FLOAT, false, 0, 0);
+        context.bufferData(context.ARRAY_BUFFER, new Float32Array([
+            -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, // Front face XYZ x4
+            -1, -1, -1, -1, 1, -1, 1,  1, -1, 1, -1, -1, // Back face XYZ x4
+            -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1, // Top face XYZ x4
+            -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, // Bottom face XYZ x4
+            1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,// Right face XYZ x4
+            -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, // Left face XYZ x4
+        ]), context.STATIC_DRAW);
+        context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'vertexPosition'), 3, context.FLOAT, false, 0, 0);
         context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'vertexPosition'));
+
+        const indexBuffer = context.createBuffer();
+        context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        context.bufferData(context.ELEMENT_ARRAY_BUFFER, new Uint16Array([
+            0,  1,  2,      0,  2,  3,    // Front face tri indices
+            4,  5,  6,      4,  6,  7,    // Back face tri indices
+            8,  9,  10,     8,  10, 11,   // Top face tri indices
+            12, 13, 14,     12, 14, 15,   // Bottom face tri indices
+            16, 17, 18,     16, 18, 19,   // Right face tri indices
+            20, 21, 22,     20, 22, 23,   // Left face tri indices
+        ]), context.STATIC_DRAW);
 
         const colorBuffer = context.createBuffer();
         context.bindBuffer(context.ARRAY_BUFFER, colorBuffer);
-        context.bufferData(context.ARRAY_BUFFER, new Float32Array([ 1, 1, 1, 1 /* W */, 1, 0, 0, 1 /* R */, 0, 1, 0, 1 /* G */, 0, 0, 1, 1 /* B */ ]), context.STATIC_DRAW);
+        context.bufferData(context.ARRAY_BUFFER, new Float32Array([
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // Front face RGBA x4
+            1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, // Back face RGBA x4
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, // Top face RGBW x4
+            0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, // Bottom face RGBW x4
+            1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, // Right face RGBW x4
+            1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, // Left face RGBW x4
+        ]), context.STATIC_DRAW);
         context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'vertexColor'), 4, context.FLOAT, false, 0, 0);
         context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'vertexColor'));
 
@@ -106,10 +131,10 @@ void main() {
         context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'modelViewMatrix'), false, modelViewMatrix);
 
         // Render the scene
-        context.drawArrays(context.TRIANGLE_STRIP, 0, 4);
+        context.drawElements(context.TRIANGLES, 36, context.UNSIGNED_SHORT, 0);
 
         // Rotate the square
-        glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.01, [0 /* X */, 0 /* Y */, 1 /* Z */]);
+        glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.01, [1 /* X */, 1 /* Y */, 1 /* Z */]);
 
         document.title = Math.round(1000 / (timestamp - timestampLast)) + ' FPS';
         timestampLast = timestamp;
