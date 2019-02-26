@@ -1,5 +1,7 @@
 # WebGL Exploration
 
+[**DEMO**](https://tomashubelbauer.github.io/webgl-exploration)
+
 In this repository I am going to be reading through and following WebGL tutorial with a goal of putting together a demo
 of rendering a low poly scene comprising of procedurally generated objects from scratch and animating a camera flying
 through that scene.
@@ -58,3 +60,5 @@ https://www.jsdelivr.com/package/npm/gl-matrix
   - Do I need to reacreate the context each time or something?
 
 - [ ] Continue with https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
+
+You can find the live demo at https://tomashubelbauer.github.io/webgl-exploration
