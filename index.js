@@ -1,20 +1,24 @@
 window.addEventListener('load', _event => {
     const mainCanvas = document.querySelector('#mainCanvas');
+    
+    // Set the canvas image dimensions (default 300x150) to the dimensions of the `canvas` DOM element to avoid it needing to be scaled
     mainCanvas.setAttribute('width', mainCanvas.clientWidth);
     mainCanvas.setAttribute('height', mainCanvas.clientHeight);
+    
+    // Obtain the WebGL rendering context if available
     const context = mainCanvas.getContext('webgl');
     if (context === null) {
         alert('You need a WebGL enabled browser.');
         return;
     }
 
-    // Enable depth testing
+    // Enable the use of the depth buffer and comparing to it for depth testing using the `depthFunc`
     context.enable(context.DEPTH_TEST);
 
-    // Make near things obscure far things
+    // Make near things obscure far things by passing if the incoming value is less than or equal to the depth buffer value
     context.depthFunc(context.LEQUAL);
 
-    // Program the GLSL vertex shared for transforming vertex coordinates to the OpenGL clip space
+    // Program the GLSL vertex shader for transforming vertex coordinates to the OpenGL clip space (-1 to 1)
     const vertexShaderSource = `
 attribute vec4 vertexPosition;
 attribute vec4 vertexColor;
@@ -38,7 +42,7 @@ void main() {
         return;
     }
 
-    // Program the fragment shader, in this case returning white color for every pixel of scene objects
+    // Program the fragment shader which propagates the color received from the vertex shader varying
     const fragmentShaderSource = `
 // Note that this gets passed in from the vertex shader
 varying lowp vec4 color;
@@ -57,7 +61,7 @@ void main() {
         return;
     }
 
-    // Create a shader program, which is a pair of a vertex and a fragment shader
+    // Create and link a shader program, which is a pair of a vertex and a fragment shader
     const shaderProgram = context.createProgram();
     context.attachShader(shaderProgram, vertexShader);
     context.attachShader(shaderProgram, fragmentShader);
@@ -72,11 +76,14 @@ void main() {
     const aspectRatio = mainCanvas.clientWidth / mainCanvas.clientHeight;
     const nearDepth = 0.1;
     const farDepth = 100;
+    
     const projectionMatrix = glMatrix.mat4.create();
     glMatrix.mat4.perspective(projectionMatrix, fieldOfView, aspectRatio, nearDepth, farDepth);
+    context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'projectionMatrix'), false, projectionMatrix);
 
     const modelViewMatrix = glMatrix.mat4.create();
-    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6]);
+    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6 /* In front of the camera */]);
+    context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'modelViewMatrix'), false, modelViewMatrix);
 
     let timestampLast = 0;
     window.requestAnimationFrame(function draw(timestamp) {
@@ -103,17 +110,6 @@ void main() {
         context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'vertexPosition'), 3, context.FLOAT, false, 0, 0);
         context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'vertexPosition'));
 
-        const indexBuffer = context.createBuffer();
-        context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        context.bufferData(context.ELEMENT_ARRAY_BUFFER, new Uint16Array([
-            0,  1,  2,      0,  2,  3,    // Front face tri indices
-            4,  5,  6,      4,  6,  7,    // Back face tri indices
-            8,  9,  10,     8,  10, 11,   // Top face tri indices
-            12, 13, 14,     12, 14, 15,   // Bottom face tri indices
-            16, 17, 18,     16, 18, 19,   // Right face tri indices
-            20, 21, 22,     20, 22, 23,   // Left face tri indices
-        ]), context.STATIC_DRAW);
-
         const colorBuffer = context.createBuffer();
         context.bindBuffer(context.ARRAY_BUFFER, colorBuffer);
         context.bufferData(context.ARRAY_BUFFER, new Float32Array([
@@ -127,13 +123,21 @@ void main() {
         context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'vertexColor'), 4, context.FLOAT, false, 0, 0);
         context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'vertexColor'));
 
-        context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'projectionMatrix'), false, projectionMatrix);
-        context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'modelViewMatrix'), false, modelViewMatrix);
-
+        const indexBuffer = context.createBuffer();
+        context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        context.bufferData(context.ELEMENT_ARRAY_BUFFER, new Uint16Array([
+            0,  1,  2,      0,  2,  3,    // Front face tri indices
+            4,  5,  6,      4,  6,  7,    // Back face tri indices
+            8,  9,  10,     8,  10, 11,   // Top face tri indices
+            12, 13, 14,     12, 14, 15,   // Bottom face tri indices
+            16, 17, 18,     16, 18, 19,   // Right face tri indices
+            20, 21, 22,     20, 22, 23,   // Left face tri indices
+        ]), context.STATIC_DRAW);
+        
         // Render the scene
         context.drawElements(context.TRIANGLES, 36, context.UNSIGNED_SHORT, 0);
 
-        // Rotate the square
+        // Rotate the cube
         glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.01, [1 /* X */, 1 /* Y */, 1 /* Z */]);
 
         document.title = Math.round(1000 / (timestamp - timestampLast)) + ' FPS';
