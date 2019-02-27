@@ -66,3 +66,5 @@ You can find the live demo at https://tomashubelbauer.github.io/webgl-exploratio
 - [ ] Check out skybox approaches: https://webglfundamentals.org/webgl/lessons/webgl-skybox.html
 - [ ] Check out materials on this HDR sample: http://webglsamples.org/hdr/hdr.html
 - [ ] Check WebGLSamples and WebGLFundamentals in general
+- [ ] Fix the cube no longer rotating after a refactor
+- [ ] Add more cubes in a formation and rotate them all individually
