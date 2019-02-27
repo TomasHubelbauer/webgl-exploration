@@ -139,6 +139,7 @@ void main() {
 
         // Rotate the cube
         glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.01, [1 /* X */, 1 /* Y */, 1 /* Z */]);
+        context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'modelViewMatrix'), false, modelViewMatrix);
 
         document.title = Math.round(1000 / (timestamp - timestampLast)) + ' FPS';
         timestampLast = timestamp;
