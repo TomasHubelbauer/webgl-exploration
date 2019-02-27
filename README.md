@@ -62,3 +62,7 @@ https://www.jsdelivr.com/package/npm/gl-matrix
 - [ ] Continue with https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
 
 You can find the live demo at https://tomashubelbauer.github.io/webgl-exploration
+
+- [ ] Check out skybox approaches: https://webglfundamentals.org/webgl/lessons/webgl-skybox.html
+- [ ] Check out materials on this HDR sample: http://webglsamples.org/hdr/hdr.html
+- [ ] Check WebGLSamples and WebGLFundamentals in general
