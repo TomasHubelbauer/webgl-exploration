@@ -77,6 +77,9 @@ void main() {
     const nearDepth = 0.1;
     const farDepth = 100;
     
+    // Use the shader program when rendering and feed it the prepared inputs
+    context.useProgram(shaderProgram);
+    
     const projectionMatrix = glMatrix.mat4.create();
     glMatrix.mat4.perspective(projectionMatrix, fieldOfView, aspectRatio, nearDepth, farDepth);
     context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'projectionMatrix'), false, projectionMatrix);
@@ -93,9 +96,6 @@ void main() {
         context.clearDepth(1);
         // Clear the color and depth buffers, https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
-
-        // Use the shader program when rendering and feed it the prepared inputs
-        context.useProgram(shaderProgram);
 
         const positionBuffer = context.createBuffer();
         context.bindBuffer(context.ARRAY_BUFFER, positionBuffer);
