@@ -66,3 +66,8 @@ for GLSL in VS Code.
 
 - [ ] Figure out why the bad performance with relatively few meshes and shapes
 - [ ] Demo reusing a single buffer for multiple meshes/shapes by using `offet`
+
+- [ ] Prototype a balloon flying up https://threejs.org/examples/webgl_physics_rope.html
+- [ ] Prototype a cloth sliding off a box https://codepen.io/thomcc/pen/NGQpxv
+- [ ] Prototype rendering 2D and 3D text https://webglfundamentals.org/webgl/lessons/webgl-text-html.html
+- [ ] Prototype hijacking a shader to tesselate a cube/sphere and read the data back from a texture

@@ -6,7 +6,7 @@ window.addEventListener('load', async _event => {
     mainCanvas.setAttribute('height', mainCanvas.clientHeight);
     
     // Obtain the WebGL rendering context after the canvas image dimensions have been set up
-    const context = mainCanvas.getContext('webgl');
+    const context = mainCanvas.getContext('webgl', { preserveDrawingBuffer: true /* Enable "Save Image" and toDataURL */ });
     if (context === null) {
         alert('Failed to obtain a WebGL rendering context.');
         return;
