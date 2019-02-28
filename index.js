@@ -18,40 +18,6 @@ window.addEventListener('load', async _event => {
     // Make near things obscure far things by passing if the incoming value is less than or equal to the depth buffer value
     context.depthFunc(context.LEQUAL);
 
-    // Download and compile a vertex shader
-    const vertexShaderRequest = await fetch('shaders/vertex.glsl');
-    const vertexShaderSource = await vertexShaderRequest.text();
-    const vertexShader = context.createShader(context.VERTEX_SHADER);
-    context.shaderSource(vertexShader, vertexShaderSource);
-    context.compileShader(vertexShader);
-    if (!context.getShaderParameter(vertexShader, context.COMPILE_STATUS)) {
-        alert('Failed to compile the vertex shader.\n' + context.getShaderInfoLog(vertexShader));
-        context.deleteShader(vertexShader);
-        return;
-    }
-
-    // Download and compile a fragment shader
-    const fragmentShaderRequest = await fetch('shaders/fragment.glsl');
-    const fragmentShaderSource = await fragmentShaderRequest.text();
-    const fragmentShader = context.createShader(context.FRAGMENT_SHADER);
-    context.shaderSource(fragmentShader, fragmentShaderSource);
-    context.compileShader(fragmentShader);
-    if (!context.getShaderParameter(fragmentShader, context.COMPILE_STATUS)) {
-        alert('Failed to compile the fragment shader.\n' + context.getShaderInfoLog(fragmentShader));
-        context.deleteShader(fragmentShader);
-        return;
-    }
-
-    // Create and link a shader program, which is a pair of a vertex and a fragment shader
-    const shaderProgram = context.createProgram();
-    context.attachShader(shaderProgram, vertexShader);
-    context.attachShader(shaderProgram, fragmentShader);
-    context.linkProgram(shaderProgram);
-    if (!context.getProgramParameter(shaderProgram, context.LINK_STATUS)) {
-        alert('Failed to link the shader program.\n' + context.getProgramInfoLog(shaderProgram));
-        return;
-    }
-
     const fieldOfViewRadians = 45 * Math.PI / 180;
     const aspectRatio = mainCanvas.clientWidth / mainCanvas.clientHeight;
 
@@ -68,6 +34,11 @@ window.addEventListener('load', async _event => {
     const cube2ModelViewMatrix = glMatrix.mat4.create();
     glMatrix.mat4.translate(cube2ModelViewMatrix, cube2ModelViewMatrix, [1, 0, -6]);
 
+    const _2dVertexShaderSource = await (await fetch('shaders/2d.glsl')).text();
+    const _3dVertexShaderSource = await (await fetch('shaders/3d.glsl')).text();
+    const blueColorFragmentShaderSource = await (await fetch('shaders/blueColor.glsl')).text();
+    const vertexColorFragmentShaderSource = await (await fetch('shaders/vertexColor.glsl')).text();
+
     let timestampLast = 0;
     window.requestAnimationFrame(function draw(timestamp) {
         // Set the clear color, https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor
@@ -78,8 +49,13 @@ window.addEventListener('load', async _event => {
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
 
         // Draw the cubes
-        drawCube(context, shaderProgram, projectionMatrix, cube1ModelViewMatrix);
-        drawCube(context, shaderProgram, projectionMatrix, cube2ModelViewMatrix);
+        const cubeProgram = setProgram(context, _3dVertexShaderSource, vertexColorFragmentShaderSource);
+        drawCube(context, cubeProgram, projectionMatrix, cube1ModelViewMatrix);
+        drawCube(context, cubeProgram, projectionMatrix, cube2ModelViewMatrix);
+
+        // Draw a polyline
+        const lineProgram = setProgram(context, _2dVertexShaderSource, blueColorFragmentShaderSource);
+        drawPolyline(context, lineProgram);
 
         // Rotate the cubes
         glMatrix.mat4.rotate(cube1ModelViewMatrix, cube1ModelViewMatrix, 0.01, [1 /* X */, 1 /* Y */, 1 /* Z */]);
@@ -92,10 +68,46 @@ window.addEventListener('load', async _event => {
     });
 });
 
-function drawCube(context, shaderProgram, projectionMatrix, modelViewMatrix) {
+function setProgram(context, vertexShaderSource, fragmentShaderSource) {
+    // Download and compile a vertex shader
+    const vertexShader = context.createShader(context.VERTEX_SHADER);
+    context.shaderSource(vertexShader, vertexShaderSource);
+    context.compileShader(vertexShader);
+    if (!context.getShaderParameter(vertexShader, context.COMPILE_STATUS)) {
+        console.log(context.getShaderInfoLog(vertexShader));
+        alert(`Failed to compile the vertex shader.\n\n${vertexShaderSource}`);
+        context.deleteShader(vertexShader);
+        return;
+    }
+
+    // Download and compile a fragment shader
+    const fragmentShader = context.createShader(context.FRAGMENT_SHADER);
+    context.shaderSource(fragmentShader, fragmentShaderSource);
+    context.compileShader(fragmentShader);
+    if (!context.getShaderParameter(fragmentShader, context.COMPILE_STATUS)) {
+        console.log(context.getShaderInfoLog(fragmentShader));
+        alert(`Failed to compile the fragment shader.\n\n${fragmentShaderSource}`);
+        context.deleteShader(fragmentShader);
+        return;
+    }
+
+    // Create and link a shader program, which is a pair of a vertex and a fragment shader
+    const shaderProgram = context.createProgram();
+    context.attachShader(shaderProgram, vertexShader);
+    context.attachShader(shaderProgram, fragmentShader);
+    context.linkProgram(shaderProgram);
+    if (!context.getProgramParameter(shaderProgram, context.LINK_STATUS)) {
+        alert('Failed to link the shader program.\n' + context.getProgramInfoLog(shaderProgram));
+        context.deleteProgram(shaderProgram);
+        return;
+    }
+
     // Use the shader program when rendering and feed it the prepared inputs
     context.useProgram(shaderProgram);
-    
+    return shaderProgram;
+}
+
+function drawCube(context, shaderProgram, projectionMatrix, modelViewMatrix) {
     context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'projectionMatrix'), false, projectionMatrix);
     context.uniformMatrix4fv(context.getUniformLocation(shaderProgram, 'modelViewMatrix'), false, modelViewMatrix);
 
@@ -137,4 +149,26 @@ function drawCube(context, shaderProgram, projectionMatrix, modelViewMatrix) {
     ]), context.STATIC_DRAW);
     
     context.drawElements(context.TRIANGLES, 36, context.UNSIGNED_SHORT, 0);
+}
+
+function drawPolyline(context, shaderProgram) {    
+    const positionBuffer = context.createBuffer();
+    context.bindBuffer(context.ARRAY_BUFFER, positionBuffer);
+    context.bufferData(context.ARRAY_BUFFER, new Float32Array([
+        0.15, 0,
+        0.07500000000000001, 0.12990381056766578,
+        -0.07499999999999997, 0.1299038105676658,
+        -0.15, 1.8369701987210297e-17,
+        -0.07500000000000007, -0.12990381056766576,
+        0.07500000000000001, -0.12990381056766578,
+    ]), context.STATIC_DRAW);
+
+    context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'position'), 2, context.FLOAT, false, 0, 0);
+    context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'position'));
+
+    context.drawArrays(context.LINE_LOOP, 0, 6);
+}
+
+function drawSphere() {
+
 }
