@@ -53,8 +53,8 @@ window.addEventListener('load', async _event => {
         drawCube(context, cubeProgram, projectionMatrix, cube2ModelViewMatrix);
 
         const lineProgram = setProgram(context, _2dVertexShaderSource, blueColorFragmentShaderSource);
-        drawPolyline(context, lineProgram);
-        drawCircle(context, lineProgram, Math.sin(timestamp / 1000) / 2, Math.cos(timestamp / 1000) / 2, Math.abs(Math.tan(timestamp / 1000) / 100), 60);
+        draw2dLine(context, lineProgram, getCirclePoints(0, 0, .15, 6));
+        draw2dLine(context, lineProgram, getCirclePoints(Math.sin(timestamp / 1000) / 2, Math.cos(timestamp / 1000) / 2, Math.abs(Math.tan(timestamp / 1000) / 100), 60));
 
         // Rotate the cubes
         glMatrix.mat4.rotate(cube1ModelViewMatrix, cube1ModelViewMatrix, 0.01, [1 /* X */, 1 /* Y */, 1 /* Z */]);
@@ -150,42 +150,28 @@ function drawCube(context, shaderProgram, projectionMatrix, modelViewMatrix) {
     context.drawElements(context.TRIANGLES, 36, context.UNSIGNED_SHORT, 0);
 }
 
-function drawPolyline(context, shaderProgram) {    
-    const positionBuffer = context.createBuffer();
-    context.bindBuffer(context.ARRAY_BUFFER, positionBuffer);
-    context.bufferData(context.ARRAY_BUFFER, new Float32Array([
-        0.15, 0,
-        0.07500000000000001, 0.12990381056766578,
-        -0.07499999999999997, 0.1299038105676658,
-        -0.15, 1.8369701987210297e-17,
-        -0.07500000000000007, -0.12990381056766576,
-        0.07500000000000001, -0.12990381056766578,
-    ]), context.STATIC_DRAW);
-
-    context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'position'), 2, context.FLOAT, false, 0, 0);
-    context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'position'));
-
-    context.drawArrays(context.LINE_LOOP, 0, 6);
-}
-
-function drawCircle(context, shaderProgram, centerX, centerY, radius, count) {
-    const positionBufferData = new Float32Array(count * 2);
-    for (let index = 0; index < count; index++) {
-        const angle = ((index / count) * 360) * Math.PI / 180;
-        positionBufferData[index * 2 + 0] = centerX + radius * Math.sin(angle);
-        positionBufferData[index * 2 + 1] = centerY + radius * Math.cos(angle);
-    }
-
+function draw2dLine(context, shaderProgram, positionBufferData) {    
     const positionBuffer = context.createBuffer();
     context.bindBuffer(context.ARRAY_BUFFER, positionBuffer);
     context.bufferData(context.ARRAY_BUFFER, positionBufferData, context.STATIC_DRAW);
-
     context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'position'), 2, context.FLOAT, false, 0, 0);
     context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'position'));
+    context.drawArrays(context.LINE_LOOP, 0, positionBufferData.length / 2);
+}
 
-    context.drawArrays(context.LINE_LOOP, 0, count);
+function getCirclePoints(centerX, centerY, radius, count) {
+    const bufferData = new Float32Array(count * 2);
+    for (let index = 0; index < count; index++) {
+        const angle = ((index / count) * 360) * Math.PI / 180;
+        bufferData[index * 2 + 0] = centerX + radius * Math.sin(angle);
+        bufferData[index * 2 + 1] = centerY + radius * Math.cos(angle);
+    }
+    
+    return bufferData;
 }
 
 function drawSphere() {
-
+    // TODO: Generate a polyline of a spiral encompassing a sphere
+    // TODO: Remember to read 3 components from the buffer for XYZ
+    // TODO: Use or adapt the 3D vertex shader for the 3D line vertex positions
 }

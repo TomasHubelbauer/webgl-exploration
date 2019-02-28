@@ -65,3 +65,4 @@ Install the VS Code extension mentioned in `shaders` to see syntax highlighting
 for GLSL in VS Code.
 
 - [ ] Figure out why the bad performance with relatively few meshes and shapes
+- [ ] Demo reusing a single buffer for multiple meshes/shapes by using `offet`
