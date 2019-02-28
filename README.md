@@ -53,12 +53,6 @@ https://github.com/toji/gl-matrix
 http://glmatrix.net/
 https://www.jsdelivr.com/package/npm/gl-matrix
 
-- [ ] Figure out if `neatDepth` can be zero and if not why not
-- [ ] Figure out if `farDepth` can be infinite and if not why not
-
-- [ ] Fix the *Exceeded 16 live WebGL contexts for this principal, losing the least recently used one.* error
-  - Do I need to reacreate the context each time or something?
-
 - [ ] Continue with https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
 
 You can find the live demo at https://tomashubelbauer.github.io/webgl-exploration
@@ -66,7 +60,8 @@ You can find the live demo at https://tomashubelbauer.github.io/webgl-exploratio
 - [ ] Check out skybox approaches: https://webglfundamentals.org/webgl/lessons/webgl-skybox.html
 - [ ] Check out materials on this HDR sample: http://webglsamples.org/hdr/hdr.html
 - [ ] Check WebGLSamples and WebGLFundamentals in general
-- [ ] Add more cubes in a formation and rotate them all individually
 
 Install the VS Code extension mentioned in `shaders` to see syntax highlighting
 for GLSL in VS Code.
+
+- [ ] Figure out why the bad performance with relatively few meshes and shapes
