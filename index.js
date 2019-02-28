@@ -48,14 +48,13 @@ window.addEventListener('load', async _event => {
         // Clear the color and depth buffers, https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clear
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
 
-        // Draw the cubes
         const cubeProgram = setProgram(context, _3dVertexShaderSource, vertexColorFragmentShaderSource);
         drawCube(context, cubeProgram, projectionMatrix, cube1ModelViewMatrix);
         drawCube(context, cubeProgram, projectionMatrix, cube2ModelViewMatrix);
 
-        // Draw a polyline
         const lineProgram = setProgram(context, _2dVertexShaderSource, blueColorFragmentShaderSource);
         drawPolyline(context, lineProgram);
+        drawCircle(context, lineProgram, Math.sin(timestamp / 1000) / 2, Math.cos(timestamp / 1000) / 2, Math.abs(Math.tan(timestamp / 1000) / 100), 60);
 
         // Rotate the cubes
         glMatrix.mat4.rotate(cube1ModelViewMatrix, cube1ModelViewMatrix, 0.01, [1 /* X */, 1 /* Y */, 1 /* Z */]);
@@ -167,6 +166,24 @@ function drawPolyline(context, shaderProgram) {
     context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'position'));
 
     context.drawArrays(context.LINE_LOOP, 0, 6);
+}
+
+function drawCircle(context, shaderProgram, centerX, centerY, radius, count) {
+    const positionBufferData = new Float32Array(count * 2);
+    for (let index = 0; index < count; index++) {
+        const angle = ((index / count) * 360) * Math.PI / 180;
+        positionBufferData[index * 2 + 0] = centerX + radius * Math.sin(angle);
+        positionBufferData[index * 2 + 1] = centerY + radius * Math.cos(angle);
+    }
+
+    const positionBuffer = context.createBuffer();
+    context.bindBuffer(context.ARRAY_BUFFER, positionBuffer);
+    context.bufferData(context.ARRAY_BUFFER, positionBufferData, context.STATIC_DRAW);
+
+    context.vertexAttribPointer(context.getAttribLocation(shaderProgram, 'position'), 2, context.FLOAT, false, 0, 0);
+    context.enableVertexAttribArray(context.getAttribLocation(shaderProgram, 'position'));
+
+    context.drawArrays(context.LINE_LOOP, 0, count);
 }
 
 function drawSphere() {
