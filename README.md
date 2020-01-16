@@ -71,3 +71,7 @@ for GLSL in VS Code.
 - [ ] Prototype a cloth sliding off a box https://codepen.io/thomcc/pen/NGQpxv
 - [ ] Prototype rendering 2D and 3D text https://webglfundamentals.org/webgl/lessons/webgl-text-html.html
 - [ ] Prototype hijacking a shader to tesselate a cube/sphere and read the data back from a texture
+
+## To-Do
+
+### Make todos parsable
